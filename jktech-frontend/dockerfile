@@ -1,0 +1,30 @@
+# Step 1: Use Node.js image for building the app
+FROM node:18-alpine AS build
+
+# Step 2: Set working directory inside the container
+WORKDIR /app
+
+# Step 3: Copy package.json and package-lock.json (or yarn.lock) to install dependencies
+COPY package*.json ./
+
+# Step 4: Install dependencies (includes React, TypeScript, Tailwind, and Vite)
+RUN npm install
+
+# Step 5: Copy all the source files to the container
+COPY . .
+
+# Step 6: Build the Vite app
+RUN npm run build
+
+# Step 7: Serve the app using a lightweight web server (e.g., serve)
+# Use Nginx or any server, but for simplicity we'll use `serve`
+FROM serve:latest
+
+# Step 8: Copy the build folder to the web server's directory
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Step 9: Expose the port
+EXPOSE 80
+
+# Step 10: Start the app with Nginx or `serve`
+CMD ["serve", "-s", "/usr/share/nginx/html"]
